@@ -1485,34 +1485,34 @@ mod native_backend {
             let mut chrome_options: Map<String, Value> = Map::new();
             let mut args: Vec<Value> = Vec::new();
 
-            if headless {
-                args.push(Value::String("--headless=new".to_string()));
-                args.push(Value::String("--disable-gpu".to_string()));
-            }
-
-            // When running as a service (systemd/OpenRC), the browser sandbox
-            // fails because the process lacks a user namespace / session.
-            // --no-sandbox and --disable-dev-shm-usage are required in this context.
-            if super::is_service_environment() {
-                args.push(Value::String("--no-sandbox".to_string()));
-                args.push(Value::String("--disable-dev-shm-usage".to_string()));
-            }
-
-            if !args.is_empty() {
-                chrome_options.insert("args".to_string(), Value::Array(args));
-            }
-
-            if let Some(path) = chrome_path {
-                let trimmed = path.trim();
-                if !trimmed.is_empty() {
-                    chrome_options.insert("binary".to_string(), Value::String(trimmed.to_string()));
-                }
-            }
-
             if let Some(addr) = debugger_address {
                 let trimmed = addr.trim();
                 if !trimmed.is_empty() {
                     chrome_options.insert("debuggerAddress".to_string(), Value::String(trimmed.to_string()));
+                }
+            } else {
+                if headless {
+                    args.push(Value::String("--headless=new".to_string()));
+                    args.push(Value::String("--disable-gpu".to_string()));
+                }
+
+                // When running as a service (systemd/OpenRC), the browser sandbox
+                // fails because the process lacks a user namespace / session.
+                // --no-sandbox and --disable-dev-shm-usage are required in this context.
+                if super::is_service_environment() {
+                    args.push(Value::String("--no-sandbox".to_string()));
+                    args.push(Value::String("--disable-dev-shm-usage".to_string()));
+                }
+
+                if !args.is_empty() {
+                    chrome_options.insert("args".to_string(), Value::Array(args));
+                }
+
+                if let Some(path) = chrome_path {
+                    let trimmed = path.trim();
+                    if !trimmed.is_empty() {
+                        chrome_options.insert("binary".to_string(), Value::String(trimmed.to_string()));
+                    }
                 }
             }
 
