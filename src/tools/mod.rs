@@ -526,6 +526,7 @@ pub fn all_tools_with_runtime(
             browser_config.backend.clone(),
             browser_config.native_headless,
             browser_config.native_webdriver_url.clone(),
+            browser_config.native_debugger_address.clone(),
             browser_config.native_chrome_path.clone(),
             ComputerUseConfig {
                 endpoint: browser_config.computer_use.endpoint.clone(),

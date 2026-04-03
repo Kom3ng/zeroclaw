@@ -65,6 +65,7 @@ pub struct BrowserTool {
     backend: String,
     native_headless: bool,
     native_webdriver_url: String,
+    native_debugger_address: Option<String>,
     native_chrome_path: Option<String>,
     computer_use: ComputerUseConfig,
     #[cfg(feature = "browser-native")]
@@ -210,6 +211,7 @@ impl BrowserTool {
             true,
             "http://127.0.0.1:9515".into(),
             None,
+            None,
             ComputerUseConfig::default(),
         )
     }
@@ -222,6 +224,7 @@ impl BrowserTool {
         backend: String,
         native_headless: bool,
         native_webdriver_url: String,
+        native_debugger_address: Option<String>,
         native_chrome_path: Option<String>,
         computer_use: ComputerUseConfig,
     ) -> Self {
@@ -232,6 +235,7 @@ impl BrowserTool {
             backend,
             native_headless,
             native_webdriver_url,
+            native_debugger_address,
             native_chrome_path,
             computer_use,
             #[cfg(feature = "browser-native")]
@@ -659,6 +663,7 @@ impl BrowserTool {
                     action.clone(),
                     self.native_headless,
                     &self.native_webdriver_url,
+                    self.native_debugger_address.as_deref(),
                     self.native_chrome_path.as_deref(),
                 )
                 .await;
@@ -676,6 +681,7 @@ impl BrowserTool {
                             action,
                             self.native_headless,
                             &self.native_webdriver_url,
+                            self.native_debugger_address.as_deref(),
                             self.native_chrome_path.as_deref(),
                         )
                         .await
@@ -1139,11 +1145,12 @@ mod native_backend {
             action: BrowserAction,
             headless: bool,
             webdriver_url: &str,
+            debugger_address: Option<&str>,
             chrome_path: Option<&str>,
         ) -> Result<Value> {
             match action {
                 BrowserAction::Open { url } => {
-                    self.ensure_session(headless, webdriver_url, chrome_path)
+                    self.ensure_session(headless, webdriver_url, debugger_address, chrome_path)
                         .await?;
                     let client = self.active_client()?;
                     client
@@ -1467,6 +1474,7 @@ mod native_backend {
             &mut self,
             headless: bool,
             webdriver_url: &str,
+            debugger_address: Option<&str>,
             chrome_path: Option<&str>,
         ) -> Result<()> {
             if self.client.is_some() {
@@ -1498,6 +1506,13 @@ mod native_backend {
                 let trimmed = path.trim();
                 if !trimmed.is_empty() {
                     chrome_options.insert("binary".to_string(), Value::String(trimmed.to_string()));
+                }
+            }
+
+            if let Some(addr) = debugger_address {
+                let trimmed = addr.trim();
+                if !trimmed.is_empty() {
+                    chrome_options.insert("debuggerAddress".to_string(), Value::String(trimmed.to_string()));
                 }
             }
 
@@ -2365,6 +2380,7 @@ mod tests {
             true,
             "http://127.0.0.1:9515".into(),
             None,
+            None,
             ComputerUseConfig::default(),
         );
         assert_eq!(tool.configured_backend().unwrap(), BrowserBackendKind::Auto);
@@ -2380,6 +2396,7 @@ mod tests {
             "computer_use".into(),
             true,
             "http://127.0.0.1:9515".into(),
+            None,
             None,
             ComputerUseConfig::default(),
         );
@@ -2399,6 +2416,7 @@ mod tests {
             "computer_use".into(),
             true,
             "http://127.0.0.1:9515".into(),
+            None,
             None,
             ComputerUseConfig {
                 endpoint: "http://computer-use.example.com/v1/actions".into(),
@@ -2420,6 +2438,7 @@ mod tests {
             true,
             "http://127.0.0.1:9515".into(),
             None,
+            None,
             ComputerUseConfig {
                 endpoint: "https://computer-use.example.com/v1/actions".into(),
                 allow_remote_endpoint: true,
@@ -2440,6 +2459,7 @@ mod tests {
             "computer_use".into(),
             true,
             "http://127.0.0.1:9515".into(),
+            None,
             None,
             ComputerUseConfig {
                 max_coordinate_x: Some(100),

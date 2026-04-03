@@ -2469,6 +2469,9 @@ pub struct BrowserConfig {
     /// WebDriver endpoint URL for rust-native backend (e.g. http://127.0.0.1:9515)
     #[serde(default = "default_browser_webdriver_url")]
     pub native_webdriver_url: String,
+    /// Optional Chrome DevTools Protocol debugger address for attaching to an existing browser (e.g. 127.0.0.1:9222)
+    #[serde(default)]
+    pub native_debugger_address: Option<String>,
     /// Optional Chrome/Chromium executable path for rust-native backend
     #[serde(default)]
     pub native_chrome_path: Option<String>,
@@ -2498,6 +2501,7 @@ impl Default for BrowserConfig {
             backend: default_browser_backend(),
             native_headless: default_true(),
             native_webdriver_url: default_browser_webdriver_url(),
+            native_debugger_address: None,
             native_chrome_path: None,
             computer_use: BrowserComputerUseConfig::default(),
         }
@@ -13242,6 +13246,7 @@ default_temperature = 0.7
             backend: "auto".into(),
             native_headless: false,
             native_webdriver_url: "http://localhost:4444".into(),
+            native_debugger_address: None,
             native_chrome_path: Some("/usr/bin/chromium".into()),
             computer_use: BrowserComputerUseConfig {
                 endpoint: "https://computer-use.example.com/v1/actions".into(),
